@@ -1,0 +1,360 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gerador de Assinatura em Tempo Real</title>
+    <style>
+        :root {
+            --cor-primaria: #ec0606;
+            --cor-primaria-hover: #002244;
+            --cor-fundo: #585858;
+            --cor-container: #ffffff;
+            --cor-texto: #1a1a2e;
+            --cor-borda: #ddd;
+            --sombra-foco: rgba(236, 6, 6, 0.2);
+            --sombra-container: rgba(0, 0, 0, 0.08);
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: var(--cor-fundo);
+            color: var(--cor-texto);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            flex-direction: column;
+        }
+
+        .logo-container {
+            display: flex;
+            align-items: center;
+            gap: 40px;
+            margin-bottom: 30px;
+        }
+
+        .logo-img {
+            max-height: 60px;
+            width: auto;
+        }
+        
+        .app-wrapper {
+            display: flex;
+            align-items: flex-start;
+            justify-content: center;
+            gap: 30px;
+            width: 100%;
+            padding: 0 20px;
+            box-sizing: border-box;
+        }
+
+        .container {
+            background-color: var(--cor-container);
+            padding: 40px;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px var(--sombra-container);
+            width: 100%;
+            max-width: 500px;
+            box-sizing: border-box;
+        }
+
+        h2, h3 {
+            text-align: center;
+            color: var(--cor-primaria);
+            margin-top: 0;
+        }
+        
+        .form-group { margin-bottom: 15px; }
+
+        label {
+            display: block;
+            font-size: 14px;
+            color: #333;
+            margin-bottom: 5px;
+            font-weight: 600;
+        }
+
+        input {
+            width: 100%;
+            padding: 12px;
+            font-size: 14px;
+            border: 1px solid var(--cor-borda);
+            border-radius: 8px;
+            box-sizing: border-box;
+            transition: border-color 0.3s, box-shadow 0.3s, transform 0.2s ease-out;
+        }
+        
+        input:hover { transform: scale(1.02); }
+
+        input:focus {
+            border-color: var(--cor-primaria);
+            outline: none;
+            box-shadow: 0 0 0 3px var(--sombra-foco);
+        }
+
+        .button {
+            width: 100%;
+            padding: 14px;
+            font-size: 16px;
+            font-weight: 700;
+            color: var(--cor-container);
+            background-color: var(--cor-primaria);
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: background-color 0.3s, transform 0.2s ease-out;
+            position: relative;
+        }
+        
+        .button:hover { transform: scale(1.02); }
+        .button:disabled { background-color: #aaa; cursor: not-allowed; }
+        
+        /* --- Estilos da Prévia --- */
+        .company-selector {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-bottom: 30px;
+            flex-wrap: wrap;
+        }
+
+        .company-selector .option { display: block; }
+        .company-selector input[type="checkbox"] { display: none; }
+        .company-selector label {
+            display: block;
+            padding: 10px 20px;
+            background-color: #f0f2f5;
+            color: #333;
+            border-radius: 8px;
+            cursor: pointer;
+            border: 1px solid #ddd;
+            font-weight: 600;
+            transition: all 0.2s ease-out;
+        }
+
+        .company-selector label:hover {
+            border-color: var(--cor-primaria);
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+
+        .company-selector input[type="checkbox"]:checked + label {
+            background-color: var(--cor-primaria);
+            color: white;
+            border-color: var(--cor-primaria);
+            transform: scale(1.05);
+        }
+
+        .signature-block { margin-bottom: 30px; text-align: center; }
+        .signature-block .button { margin-top: 15px; max-width: 300px; margin-left: auto; margin-right: auto; }
+        .signature-content {
+            position: relative;
+            max-width: 100%; /* Isso permite que ele seja responsivo na tela */
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            border-radius: 8px;
+            overflow: hidden;
+            display: inline-block;
+        }
+
+        .signature-bg { display: block; width: 100%; }
+        .signature-text {
+            position: absolute;
+            font-size: 10px;
+            line-height: 1.4;
+            color: #000;
+            text-align: left;
+        }
+        .signature-text strong { font-size: 12px; text-transform: uppercase; color: #000000; }
+        .oculto { display: none; }
+
+        /* --- Responsividade --- */
+        @media (max-width: 992px) {
+            .app-wrapper {
+                flex-direction: column;
+                align-items: center;
+                gap: 0;
+                padding: 0;
+            }
+            .container { margin: 20px; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="logo-container">
+    <img src="logo_emive.avif" alt="Logo Emive" class="logo-img">
+    <img src="icone_AlarmCenter-180x180.jpg" alt="Logo Alarm Center" class="logo-img">
+</div>
+
+<div class="app-wrapper">
+    <div class="container">
+        <h2>Gerador de Assinatura</h2>
+        <form id="userInfoForm">
+            <div class="form-group">
+                <label for="nome">Nome Completo</label>
+                <input type="text" id="nome" placeholder="Digite seu nome completo" required>
+            </div>
+            <div class="form-group">
+                <label for="cargo">Cargo</label>
+                <input type="text" id="cargo" placeholder="Ex: Analista de Suporte" required>
+            </div>
+            <div class="form-group">
+                <label for="email">E-mail</label>
+                <input type="email" id="email" placeholder="seu.email@empresa.com.br" required>
+            </div>
+            <div class="form-group">
+                <label for="telefone">Telefone</label>
+                <input type="tel" id="telefone" placeholder="(99) 99999-9999" required>
+            </div>
+        </form>
+    </div>
+
+    <div class="container signature-preview" id="previewContainer">
+        <h3>Selecione a(s) Empresa(s)</h3>
+        <div id="companySelector" class="company-selector"></div>
+        <div id="signatureOutput"></div>
+    </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js" defer></script>
+<script defer>
+    // --- CONFIGURAÇÕES E DADOS ---
+    const companies = [
+        { id: 'alarm-center', name: 'Alarm Center', image: 'Assinaturas_Email_Alarm-Center.jpg' },
+        { id: 'emive', name: 'Emive', image: 'Assinaturas_Email_Emive.jpg' }
+    ];
+    const alturaEspacador = 10;
+    const posicaoVerticalTexto = 18;
+
+    // --- SELEÇÃO DOS ELEMENTOS DO DOM ---
+    const userInfoForm = document.getElementById('userInfoForm');
+    const nomeInput = document.getElementById('nome');
+    const cargoInput = document.getElementById('cargo');
+    const emailInput = document.getElementById('email');
+    const telefoneInput = document.getElementById('telefone');
+    
+    const previewContainer = document.getElementById('previewContainer');
+    const companySelector = document.getElementById('companySelector');
+    const signatureOutput = document.getElementById('signatureOutput');
+
+    // --- FUNÇÕES AUXILIARES ---
+    const formatarTelefone = (value) => {
+        let val = value.replace(/\D/g, '').slice(0, 11);
+        if (val.length > 10) val = val.replace(/^(\d{2})(\d{5})(\d{4})$/, "($1) $2-$3");
+        else if (val.length > 5) val = val.replace(/^(\d{2})(\d{4})(\d{0,4})$/, "($1) $2-$3");
+        else if (val.length > 2) val = val.replace(/^(\d{2})(\d{0,5})$/, "($1) $2");
+        else val = val.replace(/^(\d*)$/, "($1");
+        return val;
+    };
+
+    // --- LÓGICA PRINCIPAL ---
+    const popularEmpresas = () => {
+        companies.forEach(company => {
+            const optionDiv = document.createElement('div');
+            optionDiv.className = 'option';
+            optionDiv.innerHTML = `
+                <input type="checkbox" id="${company.id}" value="${company.id}" class="company-checkbox">
+                <label for="${company.id}">${company.name}</label>
+            `;
+            companySelector.appendChild(optionDiv);
+        });
+    };
+
+    const updatePreview = () => {
+        const nomeCompleto = nomeInput.value;
+        const cargo = cargoInput.value;
+        const email = emailInput.value;
+        const telefone = telefoneInput.value;
+        
+        if (!nomeCompleto || !cargo || !email || !telefone) {
+            signatureOutput.innerHTML = '';
+            return;
+        }
+
+        const partesDoNome = nomeCompleto.trim().split(' ');
+        const nomeParaAssinatura = partesDoNome.length >= 2
+            ? `${partesDoNome[0]} ${partesDoNome[partesDoNome.length - 1]}`
+            : nomeCompleto;
+
+        signatureOutput.innerHTML = '';
+        const checkboxesSelecionados = document.querySelectorAll('.company-checkbox:checked');
+
+        checkboxesSelecionados.forEach(checkbox => {
+            const empresa = companies.find(c => c.id === checkbox.value);
+            if (empresa) {
+                const signatureBlockHTML = `
+                    <div class="signature-block">
+                        <div class="signature-content">
+                            <div style="height: ${alturaEspacador}px; background-color: #ffffff;"></div>
+                            <img src="${empresa.image}" class="signature-bg" alt="Fundo da assinatura ${empresa.name}" crossorigin="anonymous">
+                            <div class="signature-text" style="top: ${posicaoVerticalTexto}px; left: 30px;">
+                                <strong>${nomeParaAssinatura}</strong><br>
+                                ${cargo}<br>
+                                <span style="color:#003366;">${email}</span><br>
+                                ${telefone}
+                            </div>
+                        </div>
+                        <button class="button download-btn-individual">Baixar ${empresa.name}</button>
+                    </div>
+                `;
+                signatureOutput.insertAdjacentHTML('beforeend', signatureBlockHTML);
+            }
+        });
+    };
+    
+    // Função para baixar a assinatura (VERSÃO CORRIGIDA PARA O BUG MOBILE)
+    const baixarAssinaturaIndividual = (event) => {
+        if (!event.target.classList.contains('download-btn-individual')) return;
+
+        const botao = event.target;
+        const signatureContent = botao.closest('.signature-block').querySelector('.signature-content');
+        
+        // --- INÍCIO DA CORREÇÃO ---
+        const larguraIdeal = 600; // Largura fixa em pixels da sua assinatura de e-mail.
+        const estiloOriginal = signatureContent.style.cssText;
+
+        // Força a largura ideal antes de "fotografar"
+        signatureContent.style.width = `${larguraIdeal}px`;
+        signatureContent.style.maxWidth = `${larguraIdeal}px`;
+        // --- FIM DA CORREÇÃO ---
+
+        const nomeEmpresa = botao.textContent.replace('Baixar ', '').replace(/\s+/g, '_');
+        const nomeArquivo = `assinatura_${nomeInput.value.replace(/\s+/g, '_')}_${nomeEmpresa}.png`;
+
+        botao.disabled = true;
+        botao.textContent = 'Baixando...';
+
+        html2canvas(signatureContent, { 
+            useCORS: true, 
+            scale: 2,
+            backgroundColor: null
+        }).then(canvas => {
+            const link = document.createElement('a');
+            link.download = nomeArquivo;
+            link.href = canvas.toDataURL('image/png');
+            link.click();
+        }).catch(err => {
+            console.error("Erro ao gerar imagem:", err);
+        }).finally(() => {
+            // Restaura o estilo original após a captura (MUITO IMPORTANTE)
+            signatureContent.style.cssText = estiloOriginal;
+            
+            botao.disabled = false;
+            botao.textContent = `Baixar ${nomeEmpresa.replace('_', ' ')}`;
+        });
+    };
+
+    // --- INICIALIZAÇÃO E OUVINTES DE EVENTOS ---
+    document.addEventListener('DOMContentLoaded', popularEmpresas);
+    userInfoForm.addEventListener('input', updatePreview);
+    companySelector.addEventListener('change', updatePreview);
+    signatureOutput.addEventListener('click', baixarAssinaturaIndividual);
+    telefoneInput.addEventListener('input', (e) => { 
+        e.target.value = formatarTelefone(e.target.value);
+    });
+
+</script>
+</body>
+</html>
