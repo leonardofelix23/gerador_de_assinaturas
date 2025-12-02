@@ -162,7 +162,6 @@
         .signature-text {
             position: absolute;
             font-size: 10px;
-            line-height: 1.4;
             color: #000;
             text-align: left;
         }
@@ -289,10 +288,10 @@
                         <div class="signature-content">
                             <div style="height: ${alturaEspacador}px; background-color: #ffffff;"></div>
                             <img src="${empresa.image}" class="signature-bg" alt="Fundo da assinatura ${empresa.name}" crossorigin="anonymous">
-                            <div class="signature-text" style="top: ${posicaoVerticalTexto}px; left: 30px;">
+                            <div class="signature-text" style="top: ${posicaoVerticalTexto}px; left: 30px; line-height: 2.5;">
                                 <strong>${nomeParaAssinatura}</strong><br>
                                 ${cargo}<br>
-                                <span style="color:#003366;">${email}</span><br>
+                                <span style="color:#00;">${email}</span><br>
                                 ${telefone}
                             </div>
                         </div>
